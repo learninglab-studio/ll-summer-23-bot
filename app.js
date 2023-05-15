@@ -28,6 +28,7 @@ app.view(/slaunch_submission/, handleSlaunchSubmission);
 
 (async () => {
   // Start your app
+  console.log('starting the app')
   await app.start(process.env.PORT || 3000);
 
   console.log('⚡️ Bolt app is running!');
