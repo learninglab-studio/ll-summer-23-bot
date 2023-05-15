@@ -4,6 +4,7 @@ const axios = require('axios');
 
 const createTeamNote = async function(options){
   try {
+    magenta("creating Team note")
       const data = {
           "title": options.title,
           "content": options.content,
@@ -19,10 +20,12 @@ const createTeamNote = async function(options){
               'Authorization': `Bearer ${process.env.HACKMD_API_TOKEN}`
           },
       });
+      magenta("team note created successfully")
       yellow(response.data)
       return response.data
   } catch (error) {
-      llog.red(error)
+    red("failed to create team note")
+      red(error)
   }
 }
 
@@ -44,6 +47,7 @@ module.exports = async ({ ack, body, view, client, logger }) => {
 
     const assignedToSlackIds = view.state.values.assignedto.assignedto_input.selected_users || null;
     const assignedToAirtableUsers = []
+    const availableForSlackChannels = []
     // const availableForSlackChannels = view['state']['values']['available_for']['AvailableFor']['selected_conversations'] || null;
     const availableForAirtableUsers = []
     try {
@@ -60,22 +64,30 @@ module.exports = async ({ ack, body, view, client, logger }) => {
       const slackId = assignedToSlackIds[i];
       try {
         const personResult = await findRecordByValue({
-          baseId: process.env.AIRTABLE_WORK_BASE,
+          baseId: process.env.AIRTABLE_SUMMER_23_BASE,
           table: "Workers",
           field: "SlackId",
           view: "MAIN",
           value: slackId
         })
+        yellow("personResult", personResult)
+        // try {
+        //   const workerPropsResult = await findRecordByValue({
+        //     baseId: process.env.AIRTABLE_SUMMER_23_BASE,
+        //     table: "WorkerProps",
+        //     field: "SlackChannel",
+        //     view: "MAIN",
+        //     value: slackId
+        //   })
+        //   yellow("workerPropsResult", workerPropsResult)
+        //   availableForAirtableUsers.push(workerPropsResult.id)
 
-        // const workerPropsResult = await findRecordByValue({
-        //   baseId: process.env.AIRTABLE_WORK_BASE,
-        //   table: "WorkerProps",
-        //   field: "SlackChannel",
-        //   view: "MAIN",
-        //   value: slackId
-        // })
+        // } catch (error) {
+        //   red("couldn't fine workerProps result for", slackId)
+        //   red(error)
+        // }
+        
         assignedToAirtableUsers.push(personResult.id)
-        // availableForAirtableUsers.push(workerPropsResult.id)
       } catch (error) {
         red(divider, `${slackId} is not yet a User in the WorkBase`, divider)
       }
@@ -100,27 +112,30 @@ module.exports = async ({ ack, body, view, client, logger }) => {
       magenta("looking for", body.user.id)
       yellow(body)
       const assignedByResult = await findRecordByValue({
-        baseId: process.env.AIRTABLE_WORK_BASE,
+        baseId: process.env.AIRTABLE_SUMMER_23_BASE,
         table: "Workers",
         field: "SlackId",
         view: "MAIN",
         value: body.user.id
       })
+      yellow("assignedByResult", assignedByResult)
       assignedByAirtableUsers.push(assignedByResult.id)
     } catch (error) {
       red(error)
     }
-    
+    if (assignedToAirtableUsers) {
+      taskRecord.AssignedTo =assignedToAirtableUsers
+    }
     if (assignedByAirtableUsers) {
       taskRecord.AssignedBy = assignedByAirtableUsers
     }
-    if (availableForAirtableUsers) {
-      taskRecord.AvailableFor = availableForAirtableUsers
-    }
-    magenta(taskRecord)
+    // if (availableForAirtableUsers) {
+    //   taskRecord.AvailableFor = availableForAirtableUsers
+    // }
+    magenta(divider, "taskRecord", taskRecord)
     try {
       const airtableResult = await addRecord({
-        baseId: process.env.AIRTABLE_WORK_BASE,
+        baseId: process.env.AIRTABLE_SUMMER_23_BASE,
               table: "Tasks",
               record: taskRecord
       })
