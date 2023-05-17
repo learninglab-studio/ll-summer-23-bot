@@ -2,6 +2,7 @@ const { App } = require('@slack/bolt');
 require('dotenv').config()
 const sshow = require('./src/the-bot/slashes/sshow')
 const slog = require('./src/the-bot/slashes/slog')
+const simagine = require('./src/the-bot/slashes/simagine')
 const slaunchView = require('./src/the-bot/slashes/slaunch-view')
 const handleSlaunchSubmission = require('./src/the-bot/slashes/slaunch-submission')
 const app = new App({
@@ -21,6 +22,7 @@ app.message('test', async ({ message, say }) => {
 app.command("/slaunch", slaunchView);
 app.command("/slog", slog);
 app.command('/sshow', sshow);
+app.command('/simagine', simagine);
 
 // app.view(/task_submission/, handleTaskViewSubmission);
 app.view(/slaunch_submission/, handleSlaunchSubmission);
@@ -30,6 +32,5 @@ app.view(/slaunch_submission/, handleSlaunchSubmission);
   // Start your app
   console.log('starting the app')
   await app.start(process.env.PORT || 3000);
-
   console.log('⚡️ Bolt app is running!');
 })();
