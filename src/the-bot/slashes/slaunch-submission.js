@@ -2,12 +2,53 @@ const { findRecordByValue, findRecordById, addRecord } = require('../../ll-modul
 const { magenta, gray, darkgray, yellow, blue, divider, red } = require('../../ll-modules/utilities/ll-loggers')
 const axios = require('axios');
 
+const createMarkdown = (options) => {
+  return `---
+  tags: slaunch, ${options.type ? options.type : ""}
+  ---
+  # Summer Project: ${options.title}
+  
+  ![hero image](link/to/your/hero/image)
+  
+  ## At a Glance
+  
+  (type your 2-3 sentence description of the project here)
+  
+  ###### tags: type your tags comma separated here (tools, media, labs, forms, metaprojects)
+  
+  ## Project Details
+  
+  ### Context
+  
+  (bullets on the background or context that make the project needed or necessary)
+  
+  ### Deliverables 
+  (bullets on the specific deliverables you plan to produce)
+  
+  
+  ### Outcomes and Next Steps
+  
+  (bullets on the concrete things, events or outcomes you'll achieve, notes on larger impact)
+  
+  ### Timeline
+  
+  (bullets on when the project will start and stop, how much time will be devoted to different elements, dates of any key milestones, etc)
+  
+  
+  ### References, Models, and Resources 
+  (here you can put links to your inspirations, models, ideas, references, tutorial videos etc.)
+  
+  ### Working Docs and Files
+  
+  (links to working hackmds, lists of files you're working on--anything you'd like us to track in the system)`
+}
+
 const createTeamNote = async function(options){
   try {
     magenta("creating Team note")
       const data = {
           "title": options.title,
-          "content": options.content,
+          "content": createMarkdown({title: options.title}),
           "readPermission": "owner",
           "writePermission": "owner",
           "commentPermission": "everyone"
@@ -184,7 +225,7 @@ module.exports = async ({ ack, body, view, client, logger }) => {
         if (!response.ok) {
           logger.error(`Failed to open modal view: ${response.error}`);
         } else {
-          logger.info(`Modal view opened successfully: ${response}`);
+          logger.info(`Modal view opened successfully: ${JSON.stringify(response, null, 4)}`);
         }
         } catch (error) {
           logger.error(`Error opening modal view: ${error}`);
